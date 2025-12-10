@@ -58,6 +58,10 @@ inputs:
     description: "Skips cluster creation, only install kind (default: false)"
     default: "false"
     required: false
+  skip_kubectl_install:
+    description: "Skip kubectl installation (default: false)"
+    default: "false"
+    required: false
   ignore_failed_clean:
     description: "Whether to ignore the post-delete the cluster (default: false)"
     default: "false"

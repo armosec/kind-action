@@ -37,6 +37,7 @@ Usage: $(basename "$0") <options>
     -l, --verbosity                         info log verbosity, higher value produces more output
     -k, --kubectl-version                   The kubectl version to use (default: $DEFAULT_KUBECTL_VERSION)
     -o, --install-only                      Skips cluster creation, only install kind (default: false)
+        --skip-kubectl-install              Skip kubectl installation (default: false)
         --with-registry                     Enables registry config dir for the cluster (default: false)
         --cloud-provider                    Enables cloud provider for the cluster (default: false)
 
@@ -53,6 +54,7 @@ main() {
     local verbosity=
     local kubectl_version="${DEFAULT_KUBECTL_VERSION}"
     local install_only=false
+    local skip_kubectl_install=false
     local with_registry=false
     local config_with_registry_path="/etc/kind-registry/config.yaml"
     local cloud_provider=
@@ -82,16 +84,21 @@ main() {
     echo 'Adding kind directory to PATH...'
     echo "${kind_dir}" >> "${GITHUB_PATH}"
 
-    local kubectl_dir="${cache_dir}/kubectl/bin/"
-    if [[ ! -x "${kubectl_dir}/kubectl" ]]; then
-        install_kubectl
+    if [[ "${skip_kubectl_install}" == false ]]; then
+        local kubectl_dir="${cache_dir}/kubectl/bin/"
+        if [[ ! -x "${kubectl_dir}/kubectl" ]]; then
+            install_kubectl
+        fi
+
+        echo 'Adding kubectl directory to PATH...'
+        echo "${kubectl_dir}" >> "${GITHUB_PATH}"
     fi
 
-    echo 'Adding kubectl directory to PATH...'
-    echo "${kubectl_dir}" >> "${GITHUB_PATH}"
-
     "${kind_dir}/kind" version
-    "${kubectl_dir}/kubectl" version --client=true
+    
+    if [[ "${skip_kubectl_install}" == false ]]; then
+        "${kubectl_dir}/kubectl" version --client=true
+    fi
 
     if [[ "${install_only}" == false ]]; then
       create_kind_cluster
@@ -191,6 +198,14 @@ parse_command_line() {
                     shift
                 else
                     install_only=true
+                fi
+                ;;
+            --skip-kubectl-install)
+                if [[ -n "${2:-}" ]]; then
+                    skip_kubectl_install="$2"
+                    shift
+                else
+                    skip_kubectl_install=true
                 fi
                 ;;
             --with-registry)

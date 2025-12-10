@@ -61,6 +61,10 @@ main() {
         args+=(--install-only "${INPUT_INSTALL_ONLY}")
     fi
 
+    if [[ -n "${INPUT_SKIP_KUBECTL_INSTALL:-}" ]]; then
+        args+=(--skip-kubectl-install "${INPUT_SKIP_KUBECTL_INSTALL}")
+    fi
+
     if [[ -n "${INPUT_REGISTRY:-}" ]]; then
         args+=(--with-registry "${INPUT_REGISTRY}")
     fi
